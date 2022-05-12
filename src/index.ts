@@ -41,7 +41,11 @@ export async function activate(context: ExtensionContext): Promise<void> {
             window.showWarningMessage(e.message);
           }
         } else if (mode === 1) {
-          //
+          if (confirm) {
+            await workspace.nvim.command(`cfdo %s_${target}_${replace}_gc | update | bd`);
+          } else {
+            //
+          }
         } else if (mode === 2) {
           //
         }
