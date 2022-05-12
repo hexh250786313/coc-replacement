@@ -41,19 +41,19 @@
   "contributes": {
     "configuration": {
       "type": "object",
-      "title": "coc-replace configuration",
+      "title": "coc-replace-globally configuration",
       "properties": {
-        "coc-replace.enabled": {
+        "coc-replace-globally.enabled": {
           "type": "boolean",
           "default": true,
-          "description": "Enable coc-replace extension"
+          "description": "Enable coc-replace-globally extension"
         }
       }
     },
     "commands": [
       {
-        "command": "coc-replace.Command",
-        "title": "coc-replace command title"
+        "command": "coc-replace-globally.Command",
+        "title": "coc-replace-globally command title"
       }
     ]
   }
