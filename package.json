@@ -1,5 +1,5 @@
 {
-  "name": "@hexuhua/coc-replace-globally",
+  "name": "@hexuhua/coc-replacement",
   "version": "0.0.0-development",
   "description": "hexh's global replacement plugin. DO NOT use it if you are not hexh!",
   "author": "hexh <250786313@qq.com>",
@@ -42,20 +42,23 @@
   "contributes": {
     "configuration": {
       "type": "object",
-      "title": "coc-replace-globally configuration",
+      "title": "coc-replacement configuration",
       "properties": {
-        "coc-replace-globally.enabled": {
+        "coc-replacement.enabled": {
           "type": "boolean",
           "default": true,
-          "description": "Enable coc-replace-globally extension"
+          "description": "Enable coc-replacement extension"
         }
       }
     },
     "commands": [
       {
-        "command": "coc-replace-globally.Command",
-        "title": "coc-replace-globally command title"
+        "command": "coc-replacement.Command",
+        "title": "coc-replacement command title"
       }
     ]
+  },
+  "dependencies": {
+    "vscode-uri": "^3.0.3"
   }
 }

@@ -1,12 +1,11 @@
 import { commands, ExtensionContext, window, workspace } from 'coc.nvim';
+import { URI } from 'vscode-uri';
 
 export async function activate(context: ExtensionContext): Promise<void> {
-  window.showMessage(`coc-replace-globally works!`);
-
   context.subscriptions.push(
-    commands.registerCommand('coc-replace-globally.Command', async () => {
+    commands.registerCommand('coc-replacement.replace', async () => {
       setTimeout(async () => {
-        const mode = await window.showMenuPicker(['Current File', 'Quickfix', 'Global'], 'Replacement mode');
+        const mode = await window.showMenuPicker(['Current File', 'Quickfix'], 'Replacement mode');
         if (mode === -1) {
           return;
         }
@@ -36,16 +35,47 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
         if (mode === 0) {
           try {
-            await workspace.nvim.commandOutput(`%s _${target}_${replace}_g${confirm ? 'c' : ''}`);
+            await workspace.nvim.command(`%s _${target}_${replace}_g${confirm ? 'c' : ''}`);
           } catch (e: any) {
             window.showWarningMessage(e.message);
           }
         } else if (mode === 1) {
-          if (confirm) {
-            await workspace.nvim.command(`cfdo %s_${target}_${replace}_gc | update | bd`);
-          } else {
-            //
+          await workspace.nvim.command(`ccl`);
+          await workspace.nvim.command(`ScrollViewDisable`);
+          try {
+            if (confirm) {
+              // === 关闭缓存的
+              await workspace.nvim.command(`cfdo %s_${target}_${replace}_gc | redraw | silent update | redraw | bd`);
+              await workspace.nvim.command(`e# | bd#`);
+              // === 不关闭缓存的
+              // await workspace.nvim.command(`cfdo %s_${target}_${replace}_gc | redraw | silent update | redraw`);
+              // ===
+            } else {
+              const list: any[] = await workspace.nvim.call('getqflist');
+              // let fileNames = '';
+              const fileNames = await Promise.all(
+                list.map(async (item) => {
+                  const { bufnr } = item;
+                  const bufname = await workspace.nvim.call('bufname', bufnr);
+                  await workspace.nvim.command(`echo "${bufname}"`);
+                  const fullpath = await workspace.nvim.call('fnamemodify', [bufname, ':p']);
+                  const uri = URI.file(fullpath)
+                    .toString()
+                    .replace(/file:\/\//g, ''); // file:///home/hexh/workspace/MOBILE/src/index.js
+                  return uri;
+                })
+              );
+              await workspace.runCommand(
+                `sed -i 's_${target}_${replace}_gi' ${fileNames
+                  .filter((file, index, self) => self.findIndex((T) => T === file) === index)
+                  .join(' ')}`
+              );
+              await workspace.nvim.command(`echo "Done!"`);
+            }
+          } catch (e: any) {
+            window.showWarningMessage(e.message);
           }
+          await workspace.nvim.command(`ScrollViewEnable`);
         } else if (mode === 2) {
           //
         }
