@@ -35,10 +35,11 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
         if (mode === 0) {
           try {
-            await workspace.nvim.command(`%s _${target}_${replace}_g${confirm ? 'c' : ''}`);
+            await workspace.nvim.command(`%s_${target}_${replace}_g${confirm ? 'c' : ''}`);
           } catch (e: any) {
             window.showWarningMessage(e.message);
           }
+          await workspace.nvim.command(`echo "%s_${target}_${replace}_g${confirm ? 'c' : ''}"`);
         } else if (mode === 1) {
           await workspace.nvim.command(`ccl`);
           await workspace.nvim.command(`ScrollViewDisable`);
@@ -51,6 +52,10 @@ export async function activate(context: ExtensionContext): Promise<void> {
               // await workspace.nvim.command(`cfdo %s_${target}_${replace}_gc | redraw | silent update | redraw`);
               // ===
             } else {
+              target = target.includes('_') ? target.replace(/\\\\_/g, '_') : target;
+              replace = replace.includes('_') ? replace.replace(/\\\\_/g, '_') : replace;
+              target = target.includes('/') ? target.replace(/\//g, '\\/') : target;
+              replace = replace.includes('/') ? replace.replace(/\//g, '\\/') : replace;
               const list: any[] = await workspace.nvim.call('getqflist');
               // let fileNames = '';
               const fileNames = await Promise.all(
@@ -66,11 +71,11 @@ export async function activate(context: ExtensionContext): Promise<void> {
                 })
               );
               await workspace.runCommand(
-                `sed -i 's_${target}_${replace}_gi' ${fileNames
+                `perl -0777 -i -pe 's/${target}/${replace}/gi' ${fileNames
                   .filter((file, index, self) => self.findIndex((T) => T === file) === index)
                   .join(' ')}`
               );
-              await workspace.nvim.command(`echo "Done!"`);
+              await workspace.nvim.command(`e | echo "Done!"`);
             }
           } catch (e: any) {
             window.showWarningMessage(e.message);
