@@ -1,5 +1,11 @@
 import { commands, ExtensionContext, window, workspace } from 'coc.nvim';
 import { URI } from 'vscode-uri';
+import { Escape } from './util';
+
+const resume = {
+  target: '',
+  replace: '',
+};
 
 export async function activate(context: ExtensionContext): Promise<void> {
   context.subscriptions.push(
@@ -9,19 +15,14 @@ export async function activate(context: ExtensionContext): Promise<void> {
         if (mode === -1) {
           return;
         }
-        let target: string = await window.requestInput('Target String');
+        let target: string = await window.requestInput('Target String', resume.target);
         if (!target) {
           return;
         }
-        target = target.includes('_') ? target.replace(/\_/g, '\\\\_') : target;
-
-        // 没有 target 时
-        // commandOutput(`%s/${target}`);
-        // workspace.nvim.command(`echo "${text}"`);
-        // return;
+        resume.target = target;
 
         let replace = '';
-        replace = await window.requestInput('Replace String');
+        replace = await window.requestInput('Replace String', resume.replace);
         if (replace === null) {
           replace = '';
           const flag = await window.showMenuPicker(['Cancel', 'Continue but empty'], 'What is next?');
@@ -29,40 +30,44 @@ export async function activate(context: ExtensionContext): Promise<void> {
             return;
           }
         }
-        replace = replace.includes('_') ? replace.replace(/\_/g, '\\\\_') : replace;
+        resume.replace = replace;
+
+        target = target.includes('/') ? target.replace(/\//g, '\\/') : target;
+        replace = replace.includes('/') ? replace.replace(/\//g, '\\/') : replace;
 
         const confirm = await window.showMenuPicker(['No confirm', 'Confirm'], 'With Confirming?');
+        if (confirm === -1) {
+          return;
+        }
 
         if (mode === 0) {
           try {
-            await workspace.nvim.command(`%s_${target}_${replace}_g${confirm ? 'c' : ''}`);
+            target = Escape.of(target).handle('(').handle(')').handle('{').handle('}').value;
+            replace = Escape.of(replace).handle('(').handle(')').handle('{').handle('}').value;
+            await workspace.nvim.command(`%s/${target}/${replace}/g${confirm ? 'c' : ''}`);
           } catch (e: any) {
             window.showWarningMessage(e.message);
           }
-          await workspace.nvim.command(`echo "%s_${target}_${replace}_g${confirm ? 'c' : ''}"`);
         } else if (mode === 1) {
           await workspace.nvim.command(`ccl`);
           await workspace.nvim.command(`ScrollViewDisable`);
           try {
             if (confirm) {
+              target = Escape.of(target).handle('(').handle(')').handle('{').handle('}').value;
+              replace = Escape.of(replace).handle('(').handle(')').handle('{').handle('}').value;
               // === 关闭缓存的
-              await workspace.nvim.command(`cfdo %s_${target}_${replace}_gc | redraw | silent update | redraw | bd`);
+              await workspace.nvim.command(`cfdo %s/${target}/${replace}/gc | redraw | silent update | redraw | bd`);
               await workspace.nvim.command(`e# | bd#`);
               // === 不关闭缓存的
-              // await workspace.nvim.command(`cfdo %s_${target}_${replace}_gc | redraw | silent update | redraw`);
+              // await workspace.nvim.command(`cfdo %s/${target}/${replace}/gc | redraw | silent update | redraw`);
               // ===
             } else {
-              target = target.includes('_') ? target.replace(/\\\\_/g, '_') : target;
-              replace = replace.includes('_') ? replace.replace(/\\\\_/g, '_') : replace;
-              target = target.includes('/') ? target.replace(/\//g, '\\/') : target;
-              replace = replace.includes('/') ? replace.replace(/\//g, '\\/') : replace;
               const list: any[] = await workspace.nvim.call('getqflist');
               // let fileNames = '';
               const fileNames = await Promise.all(
                 list.map(async (item) => {
                   const { bufnr } = item;
                   const bufname = await workspace.nvim.call('bufname', bufnr);
-                  await workspace.nvim.command(`echo "${bufname}"`);
                   const fullpath = await workspace.nvim.call('fnamemodify', [bufname, ':p']);
                   const uri = URI.file(fullpath)
                     .toString()

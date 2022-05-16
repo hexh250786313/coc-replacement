@@ -1,2 +1,4 @@
 # coc-replacement
-hexh's global replacement plugin. DO NOT use it if you are NOT hexh!
+hexh's global replacement plugin.
+
+Feel free to check and fork!

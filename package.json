@@ -1,6 +1,6 @@
 {
   "name": "@hexuhua/coc-replacement",
-  "version": "0.0.0-development",
+  "version": "0.0.1",
   "description": "hexh's global replacement plugin. DO NOT use it if you are not hexh!",
   "author": "hexh <250786313@qq.com>",
   "license": "MIT",
