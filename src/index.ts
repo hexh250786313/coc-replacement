@@ -32,9 +32,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
         }
         resume.replace = replace;
 
-        target = target.includes('/') ? target.replace(/\//g, '\\/') : target;
-        replace = replace.includes('/') ? replace.replace(/\//g, '\\/') : replace;
-
         const confirm = await window.showMenuPicker(['No confirm', 'Confirm'], 'With Confirming?');
         if (confirm === -1) {
           return;
@@ -42,8 +39,16 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
         if (mode === 0) {
           try {
-            target = Escape.of(target).handle('(').handle(')').handle('{').handle('}').value;
-            replace = Escape.of(replace).handle('(').handle(')').handle('{').handle('}').value;
+            target = Escape.of(target)
+              .removeBackslash('(')
+              .removeBackslash(')')
+              .removeBackslash('{')
+              .removeBackslash('}').value;
+            replace = Escape.of(replace)
+              .removeBackslash('(')
+              .removeBackslash(')')
+              .removeBackslash('{')
+              .removeBackslash('}').value;
             await workspace.nvim.command(`%s/${target}/${replace}/g${confirm ? 'c' : ''}`);
           } catch (e: any) {
             window.showWarningMessage(e.message);
@@ -53,8 +58,16 @@ export async function activate(context: ExtensionContext): Promise<void> {
           await workspace.nvim.command(`ScrollViewDisable`);
           try {
             if (confirm) {
-              target = Escape.of(target).handle('(').handle(')').handle('{').handle('}').value;
-              replace = Escape.of(replace).handle('(').handle(')').handle('{').handle('}').value;
+              target = Escape.of(target)
+                .removeBackslash('(')
+                .removeBackslash(')')
+                .removeBackslash('{')
+                .removeBackslash('}').value;
+              replace = Escape.of(replace)
+                .removeBackslash('(')
+                .removeBackslash(')')
+                .removeBackslash('{')
+                .removeBackslash('}').value;
               // === 关闭缓存的
               await workspace.nvim.command(`cfdo %s/${target}/${replace}/gc | redraw | silent update | redraw | bd`);
               await workspace.nvim.command(`e# | bd#`);

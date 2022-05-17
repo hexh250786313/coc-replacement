@@ -16,7 +16,7 @@ export class Escape {
     return new Escape(fn(this.val));
   }
 
-  handle(char: string) {
+  removeBackslash(char: string) {
     const valiReg = new RegExp('\\\\' + '\\' + char, 'g');
     const reg = new RegExp('\\\\' + '\\' + char, 'g');
     return valiReg.test(this.val) ? new Escape(this.val.replace(reg, char)) : this;
