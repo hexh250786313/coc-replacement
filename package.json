@@ -1,7 +1,7 @@
 {
   "name": "@hexuhua/coc-replacement",
-  "version": "0.0.1",
-  "description": "hexh's global replacement plugin. DO NOT use it if you are not hexh!",
+  "version": "0.0.2",
+  "description": "hexh's global replacement plugin. DO NOT use it if you are NOT hexh!",
   "author": "hexh <250786313@qq.com>",
   "license": "MIT",
   "main": "lib/index.js",
