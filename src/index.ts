@@ -2,6 +2,16 @@ import { commands, ExtensionContext, window, workspace } from 'coc.nvim';
 import { URI } from 'vscode-uri';
 import { Escape } from './util';
 
+function split(arr: string[], items: Array<Array<string>> = []) {
+  if (arr.length > 50) {
+    const next: string[] = arr.splice(0, 50);
+    items.push(next);
+    split(arr, items);
+  } else {
+    items.push(arr);
+  }
+}
+
 const resume = {
   target: '',
   replace: '',
@@ -88,11 +98,15 @@ export async function activate(context: ExtensionContext): Promise<void> {
                   return uri;
                 })
               );
-              await workspace.runCommand(
-                `perl -0777 -i -pe 's/${target}/${replace}/gi' ${fileNames
-                  .filter((file, index, self) => self.findIndex((T) => T === file) === index)
-                  .join(' ')}`
-              );
+              const items: string[][] = [];
+              const all = fileNames.filter((file, index, self) => self.findIndex((T) => T === file) === index);
+              split(all, items);
+
+              const promises = items.map((item) => {
+                return workspace.runCommand(`perl -0777 -i -pe 's/${target}/${replace}/gi' ${item.join(' ')}`);
+              });
+
+              await Promise.all(promises);
               await workspace.nvim.command(`e | echo "Done!"`);
             }
           } catch (e: any) {
