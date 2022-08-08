@@ -76,12 +76,16 @@ export async function activate(context: ExtensionContext): Promise<void> {
                 .removeBackslash('(')
                 .removeBackslash(')')
                 .removeBackslash('{')
-                .removeBackslash('}').value;
+                .removeBackslash('}')
+                .removeBackslash('>')
+                .removeBackslash('<').value;
               replace = Escape.of(replace)
                 .removeBackslash('(')
                 .removeBackslash(')')
                 .removeBackslash('{')
-                .removeBackslash('}').value;
+                .removeBackslash('}')
+                .removeBackslash('>')
+                .removeBackslash('<').value;
               // === 关闭缓存的
               await workspace.nvim.command(`cfdo %s/${target}/${replace}/gc | redraw | silent update | redraw | bd`);
               await workspace.nvim.command(`e# | bd#`);
@@ -102,8 +106,8 @@ export async function activate(context: ExtensionContext): Promise<void> {
                   return decodeURIComponent(uri)
                     .replace(/\(/g, '\\(')
                     .replace(/\)/g, '\\)')
-                    .replace(/\(/g, '\\{')
-                    .replace(/\)/g, '\\}')
+                    .replace(/\{/g, '\\{')
+                    .replace(/\}/g, '\\}')
                     .replace(/\>/g, '\\>')
                     .replace(/\</g, '\\<')
                     .replace(/\u0020/g, '\\ ');
