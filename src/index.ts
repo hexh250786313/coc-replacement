@@ -53,12 +53,16 @@ export async function activate(context: ExtensionContext): Promise<void> {
               .removeBackslash('(')
               .removeBackslash(')')
               .removeBackslash('{')
-              .removeBackslash('}').value;
+              .removeBackslash('}')
+              .removeBackslash('>')
+              .removeBackslash('<').value;
             replace = Escape.of(replace)
               .removeBackslash('(')
               .removeBackslash(')')
               .removeBackslash('{')
-              .removeBackslash('}').value;
+              .removeBackslash('}')
+              .removeBackslash('>')
+              .removeBackslash('<').value;
             await workspace.nvim.command(`%s/${target}/${replace}/g${confirm ? 'c' : ''}`);
           } catch (e: any) {
             window.showWarningMessage(e.message);
@@ -94,8 +98,15 @@ export async function activate(context: ExtensionContext): Promise<void> {
                   const fullpath = await workspace.nvim.call('fnamemodify', [bufname, ':p']);
                   const uri = URI.file(fullpath)
                     .toString()
-                    .replace(/file:\/\//g, ''); // file:///home/hexh/workspace/MOBILE/src/index.js
-                  return uri;
+                    .replace(/file:\/\//g, '');
+                  return decodeURIComponent(uri)
+                    .replace(/\(/g, '\\(')
+                    .replace(/\)/g, '\\)')
+                    .replace(/\(/g, '\\{')
+                    .replace(/\)/g, '\\}')
+                    .replace(/\>/g, '\\>')
+                    .replace(/\</g, '\\<')
+                    .replace(/\u0020/g, '\\ ');
                 })
               );
               const items: string[][] = [];
