@@ -69,7 +69,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
           }
         } else if (mode === 1) {
           await workspace.nvim.command(`ccl`);
-          await workspace.nvim.command(`ScrollViewDisable`);
           try {
             if (confirm) {
               target = Escape.of(target)
@@ -127,7 +126,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
           } catch (e: any) {
             window.showWarningMessage(e.message);
           }
-          await workspace.nvim.command(`ScrollViewEnable`);
         } else if (mode === 2) {
           //
         }
